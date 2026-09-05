@@ -392,7 +392,7 @@ function chooseAction(player, key) {
 function resolve(a1, a2) {
   // Hadouken vs Hadouken -> draw
   if (a1 === "hadouken" && a2 === "hadouken") {
-    return { result: "draw", reason: "波動拳同士で相打ち！" };
+    return { result: "continue", reason: "波動拳同士で相打ち！次のターンへ！" };
   }
   // Hadouken always hits unless opponent also hadouken (handled above)
   if (a1 === "hadouken") return { result: "p1", reason: "プレイヤー1の波動拳が炸裂！" };
@@ -400,7 +400,7 @@ function resolve(a1, a2) {
 
   // Blast vs Blast -> draw
   if (a1 === "blast" && a2 === "blast") {
-    return { result: "draw", reason: "ブラスト同士で相打ち！" };
+    return { result: "continue", reason: "ブラスト同士で相打ち！次のターンへ！" };
   }
   // Blast hits only if opponent is charging; guard blocks it
   if (a1 === "blast") {
@@ -493,20 +493,14 @@ function finishBattle(outcome) {
     startTurn();
     return;
   }
-  // game over
+  // game over (only p1 or p2 can win; mutual strikes now continue)
   showScreen("result");
   setActiveCard(0);
   $("turnBanner").textContent = "";
-  if (outcome.result === "draw") {
-    $("winnerText").textContent = "引き分け！";
-    $("winnerText").style.color = "var(--accent)";
-    $("winnerSub").textContent = outcome.reason;
-  } else {
-    const winner = outcome.result === "p1" ? 1 : 2;
-    $("winnerText").textContent = `🏆 プレイヤー${winner} の勝ち！`;
-    $("winnerText").style.color = winner === 1 ? "var(--p1)" : "var(--p2)";
-    $("winnerSub").textContent = outcome.reason;
-  }
+  const winner = outcome.result === "p1" ? 1 : 2;
+  $("winnerText").textContent = `🏆 プレイヤー${winner} の勝ち！`;
+  $("winnerText").style.color = winner === 1 ? "var(--p1)" : "var(--p2)";
+  $("winnerSub").textContent = outcome.reason;
 }
 
 // ---- Events ----
