@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hadouken Battle</title>
+<style>
+  :root {
+    --bg: #0e1116;
+    --panel: #1a1f2b;
+    --panel2: #232a38;
+    --accent: #ff8a00;
+    --p1: #4fc3f7;
+    --p2: #ff6b6b;
+    --text: #e8edf4;
+    --muted: #8a94a6;
+    --win: #7CFC00;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+    background: radial-gradient(circle at 50% -10%, #1c2536, var(--bg));
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+  #app {
+    width: 100%;
+    max-width: 560px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 1.8rem;
+    margin: 0 0 4px;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, var(--p1), var(--accent), var(--p2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+  }
+  .turn-banner {
+    text-align: center;
+    font-size: 1rem;
+    color: var(--accent);
+    font-weight: bold;
+    margin-bottom: 14px;
+    min-height: 1.4em;
+  }
+
+  .status-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .player-card {
+    flex: 1;
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 12px;
+    border: 2px solid transparent;
+    text-align: center;
+  }
+  .player-card.p1 { border-color: rgba(79,195,247,0.4); }
+  .player-card.p2 { border-color: rgba(255,107,107,0.4); }
+  .player-card.active { box-shadow: 0 0 0 2px var(--accent), 0 0 18px rgba(255,138,0,0.4); }
+  .player-name { font-weight: bold; font-size: 1rem; margin-bottom: 6px; }
+  .p1 .player-name { color: var(--p1); }
+  .p2 .player-name { color: var(--p2); }
+  .energy {
+    font-size: 1.3rem;
+    letter-spacing: 2px;
+    min-height: 1.4em;
+  }
+  .energy .empty { opacity: 0.18; }
+  .energy-label { font-size: 0.75rem; color: var(--muted); }
+
+  /* Screens */
+  .screen { display: none; }
+  .screen.show { display: block; }
+
+  .card {
+    background: var(--panel);
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .prompt {
+    text-align: center;
+    font-size: 1.15rem;
+    margin-bottom: 16px;
+    font-weight: bold;
+  }
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  button.action {
+    padding: 16px 10px;
+    font-size: 1.05rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: var(--panel2);
+    color: var(--text);
+    transition: transform 0.08s, background 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  button.action .emoji { font-size: 1.5rem; }
+  button.action .cost { font-size: 0.72rem; color: var(--muted); }
+  button.action:hover:not(:disabled) { background: #303a4d; transform: translateY(-2px); }
+  button.action:active:not(:disabled) { transform: translateY(0); }
+  button.action:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .big-btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: linear-gradient(90deg, var(--accent), #ff5e00);
+    color: #1a1206;
+    margin-top: 8px;
+  }
+  .big-btn:hover { filter: brightness(1.08); }
+  .big-btn.secondary {
+    background: var(--panel2);
+    color: var(--text);
+  }
+
+  .pass-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 10px 0 18px;
+    line-height: 1.6;
+  }
+
+  /* Battle scene */
+  #battle .fighters {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 130px;
+    margin-bottom: 10px;
+  }
+  .fighter { text-align: center; width: 40%; }
+  .fighter .name { font-weight: bold; margin-bottom: 8px; }
+  .fighter.p1 .name { color: var(--p1); }
+  .fighter.p2 .name { color: var(--p2); }
+  .fighter .move {
+    font-size: 3rem;
+    display: inline-block;
+  }
+  .vs {
+    font-weight: bold;
+    color: var(--muted);
+    font-size: 1.2rem;
+  }
+  .battle-log {
+    text-align: center;
+    font-size: 1.1rem;
+    min-height: 2.6em;
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  @keyframes chargeAnim {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-10px) scale(1.15); }
+  }
+  @keyframes blastP1 { 0%{transform:translateX(0);opacity:1} 100%{transform:translateX(60px);opacity:0.4} }
+  @keyframes blastP2 { 0%{transform:translateX(0);opacity:1} 100%{transform:translateX(-60px);opacity:0.4} }
+  @keyframes guardAnim { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+  @keyframes hadoP1 { 0%{transform:translateX(0) scale(1);opacity:1} 100%{transform:translateX(90px) scale(1.6);opacity:0.5} }
+  @keyframes hadoP2 { 0%{transform:translateX(0) scale(1);opacity:1} 100%{transform:translateX(-90px) scale(1.6);opacity:0.5} }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+  .anim-charge { animation: chargeAnim 0.6s ease-in-out 2; }
+  .anim-guard { animation: guardAnim 0.5s ease-in-out 2; }
+  .anim-blast-p1 { animation: blastP1 0.7s ease-out forwards; }
+  .anim-blast-p2 { animation: blastP2 0.7s ease-out forwards; }
+  .anim-hado-p1 { animation: hadoP1 0.9s ease-out forwards; }
+  .anim-hado-p2 { animation: hadoP2 0.9s ease-out forwards; }
+  .shake { animation: shake 0.4s; }
+
+  /* Result */
+  #result .winner-text {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 20px 0;
+  }
+  #result .winner-sub {
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+  .footer-rules {
+    margin-top: 22px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.7;
+    border-top: 1px solid #2a3140;
+    padding-top: 12px;
+  }
+  .footer-rules b { color: var(--text); }
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>⚡ HADOUKEN BATTLE ⚡</h1>
+  <div class="subtitle">プレイヤー1 vs プレイヤー2 — 攻撃を当てた方が勝ち</div>
+
+  <div class="turn-banner" id="turnBanner"></div>
+
+  <div class="status-row">
+    <div class="player-card p1" id="card1">
+      <div class="player-name">プレイヤー1</div>
+      <div class="energy" id="energy1"></div>
+      <div class="energy-label">エネルギー</div>
+    </div>
+    <div class="player-card p2" id="card2">
+      <div class="player-name">プレイヤー2</div>
+      <div class="energy" id="energy2"></div>
+      <div class="energy-label">エネルギー</div>
+    </div>
+  </div>
+
+  <!-- Pass device screen -->
+  <div class="screen" id="passScreen">
+    <div class="card">
+      <div class="prompt" id="passPrompt"></div>
+      <div class="pass-note">相手に画面を見られないようにしてから<br>下のボタンを押してください。</div>
+      <button class="big-btn" id="passBtn">アクションを選ぶ</button>
+    </div>
+  </div>
+
+  <!-- Action selection screen -->
+  <div class="screen" id="selectScreen">
+    <div class="card">
+      <div class="prompt" id="selectPrompt"></div>
+      <div class="actions" id="actionButtons"></div>
+    </div>
+  </div>
+
+  <!-- Battle scene -->
+  <div class="screen" id="battle">
+    <div class="card">
+      <div class="fighters">
+        <div class="fighter p1">
+          <div class="name">プレイヤー1</div>
+          <div class="move" id="move1">❔</div>
+        </div>
+        <div class="vs">VS</div>
+        <div class="fighter p2">
+          <div class="name">プレイヤー2</div>
+          <div class="move" id="move2">❔</div>
+        </div>
+      </div>
+      <div class="battle-log" id="battleLog"></div>
+    </div>
+  </div>
+
+  <!-- Result screen -->
+  <div class="screen" id="result">
+    <div class="card">
+      <div class="winner-text" id="winnerText"></div>
+      <div class="winner-sub" id="winnerSub"></div>
+      <button class="big-btn" id="restartBtn">もう一度あそぶ</button>
+    </div>
+  </div>
+
+  <div class="footer-rules">
+    <b>アクション</b><br>
+    🔵 チャージ：エネルギーを1溜める（MAX3）<br>
+    💥 ブラスト：エネルギー1消費。相手がチャージ中なら命中／ガードで防がれる／ブラスト同士は相打ち<br>
+    🛡️ ガード：ブラストを防ぐ（エネルギー消費なし。波動拳は防げない）<br>
+    🌀 波動拳：エネルギー3消費。波動拳同士なら相打ち、それ以外は必ず命中
+  </div>
+</div>
+
+<script>
+"use strict";
+
+const MAX_ENERGY = 3;
+
+const ACTIONS = {
+  charge: { key: "charge", label: "チャージ", emoji: "🔵", cost: 0, costLabel: "エネルギー +1" },
+  blast:  { key: "blast",  label: "ブラスト", emoji: "💥", cost: 1, costLabel: "エネルギー -1" },
+  guard:  { key: "guard",  label: "ガード",   emoji: "🛡️", cost: 0, costLabel: "消費なし" },
+  hadouken: { key: "hadouken", label: "波動拳", emoji: "🌀", cost: 3, costLabel: "エネルギー -3" },
+};
+
+let state;
+
+function initState() {
+  state = {
+    energy: { 1: 0, 2: 0 },
+    turn: 1,
+    currentPlayer: 1,   // who is selecting now
+    choice: { 1: null, 2: null },
+  };
+}
+
+// ---- DOM helpers ----
+const $ = (id) => document.getElementById(id);
+const screens = ["passScreen", "selectScreen", "battle", "result"];
+function showScreen(id) {
+  screens.forEach((s) => $(s).classList.toggle("show", s === id));
+}
+
+function renderEnergy() {
+  for (const p of [1, 2]) {
+    const n = state.energy[p];
+    let html = "";
+    for (let i = 0; i < MAX_ENERGY; i++) {
+      html += `<span class="${i < n ? "" : "empty"}">🟠</span>`;
+    }
+    $("energy" + p).innerHTML = html;
+  }
+}
+
+function setActiveCard(player) {
+  $("card1").classList.toggle("active", player === 1);
+  $("card2").classList.toggle("active", player === 2);
+}
+
+// ---- Flow ----
+function startTurn() {
+  state.choice = { 1: null, 2: null };
+  state.currentPlayer = 1;
+  renderEnergy();
+  $("turnBanner").textContent = `ターン ${state.turn}`;
+  goToPass(1);
+}
+
+function goToPass(player) {
+  state.currentPlayer = player;
+  setActiveCard(player);
+  $("passPrompt").textContent = `プレイヤー${player} の番です`;
+  $("passBtn").textContent = `プレイヤー${player}：アクションを選ぶ`;
+  showScreen("passScreen");
+}
+
+function goToSelect(player) {
+  setActiveCard(player);
+  $("selectPrompt").textContent = `プレイヤー${player}：アクションを選択`;
+  const container = $("actionButtons");
+  container.innerHTML = "";
+  for (const key of ["charge", "blast", "guard", "hadouken"]) {
+    const a = ACTIONS[key];
+    const btn = document.createElement("button");
+    btn.className = "action";
+    const canAfford = state.energy[player] >= a.cost;
+    btn.disabled = !canAfford;
+    btn.innerHTML = `<span class="emoji">${a.emoji}</span><span>${a.label}</span><span class="cost">${a.costLabel}</span>`;
+    if (canAfford) {
+      btn.addEventListener("click", () => chooseAction(player, key));
+    }
+    container.appendChild(btn);
+  }
+  showScreen("selectScreen");
+}
+
+function chooseAction(player, key) {
+  state.choice[player] = key;
+  if (player === 1) {
+    goToPass(2);
+  } else {
+    setActiveCard(0);
+    runBattle();
+  }
+}
+
+// ---- Battle resolution ----
+// Returns { result: 'p1' | 'p2' | 'draw' | 'continue', reason: string }
+function resolve(a1, a2) {
+  // Hadouken vs Hadouken -> draw
+  if (a1 === "hadouken" && a2 === "hadouken") {
+    return { result: "draw", reason: "波動拳同士で相打ち！" };
+  }
+  // Hadouken always hits unless opponent also hadouken (handled above)
+  if (a1 === "hadouken") return { result: "p1", reason: "プレイヤー1の波動拳が炸裂！" };
+  if (a2 === "hadouken") return { result: "p2", reason: "プレイヤー2の波動拳が炸裂！" };
+
+  // Blast vs Blast -> draw
+  if (a1 === "blast" && a2 === "blast") {
+    return { result: "draw", reason: "ブラスト同士で相打ち！" };
+  }
+  // Blast hits only if opponent is charging; guard blocks it
+  if (a1 === "blast") {
+    if (a2 === "charge") return { result: "p1", reason: "プレイヤー1のブラストが命中！" };
+    if (a2 === "guard")  return { result: "continue", reason: "プレイヤー2がガードで防いだ！" };
+  }
+  if (a2 === "blast") {
+    if (a1 === "charge") return { result: "p2", reason: "プレイヤー2のブラストが命中！" };
+    if (a1 === "guard")  return { result: "continue", reason: "プレイヤー1がガードで防いだ！" };
+  }
+
+  return { result: "continue", reason: "決着つかず。次のターンへ！" };
+}
+
+function applyCosts(a1, a2) {
+  const cost = { 1: ACTIONS[a1].cost, 2: ACTIONS[a2].cost };
+  for (const p of [1, 2]) {
+    const key = state.choice[p];
+    if (key === "charge") {
+      state.energy[p] = Math.min(MAX_ENERGY, state.energy[p] + 1);
+    } else {
+      state.energy[p] = Math.max(0, state.energy[p] - ACTIONS[key].cost);
+    }
+  }
+}
+
+function animClass(player, key) {
+  switch (key) {
+    case "charge": return "anim-charge";
+    case "guard":  return "anim-guard";
+    case "blast":  return player === 1 ? "anim-blast-p1" : "anim-blast-p2";
+    case "hadouken": return player === 1 ? "anim-hado-p1" : "anim-hado-p2";
+  }
+  return "";
+}
+
+function runBattle() {
+  const a1 = state.choice[1];
+  const a2 = state.choice[2];
+  showScreen("battle");
+
+  const m1 = $("move1");
+  const m2 = $("move2");
+  m1.textContent = "❔";
+  m2.textContent = "❔";
+  m1.className = "move";
+  m2.className = "move";
+  $("battleLog").textContent = "3...";
+
+  // Countdown reveal
+  let count = 3;
+  const countdown = setInterval(() => {
+    count--;
+    if (count > 0) {
+      $("battleLog").textContent = count + "...";
+    } else {
+      clearInterval(countdown);
+      reveal();
+    }
+  }, 600);
+
+  function reveal() {
+    m1.textContent = ACTIONS[a1].emoji;
+    m2.textContent = ACTIONS[a2].emoji;
+    $("battleLog").textContent = `${ACTIONS[a1].label}　VS　${ACTIONS[a2].label}`;
+    // trigger animations
+    void m1.offsetWidth;
+    m1.classList.add(animClass(1, a1));
+    m2.classList.add(animClass(2, a2));
+
+    setTimeout(() => {
+      const outcome = resolve(a1, a2);
+      applyCosts(a1, a2);
+      renderEnergy();
+
+      if (outcome.result === "p1" || outcome.result === "p2") {
+        const loser = outcome.result === "p1" ? m2 : m1;
+        loser.classList.add("shake");
+      }
+      $("battleLog").textContent = outcome.reason;
+
+      setTimeout(() => finishBattle(outcome), 1300);
+    }, 1000);
+  }
+}
+
+function finishBattle(outcome) {
+  if (outcome.result === "continue") {
+    state.turn++;
+    startTurn();
+    return;
+  }
+  // game over
+  showScreen("result");
+  setActiveCard(0);
+  $("turnBanner").textContent = "";
+  if (outcome.result === "draw") {
+    $("winnerText").textContent = "引き分け！";
+    $("winnerText").style.color = "var(--accent)";
+    $("winnerSub").textContent = outcome.reason;
+  } else {
+    const winner = outcome.result === "p1" ? 1 : 2;
+    $("winnerText").textContent = `🏆 プレイヤー${winner} の勝ち！`;
+    $("winnerText").style.color = winner === 1 ? "var(--p1)" : "var(--p2)";
+    $("winnerSub").textContent = outcome.reason;
+  }
+}
+
+// ---- Events ----
+$("passBtn").addEventListener("click", () => goToSelect(state.currentPlayer));
+$("restartBtn").addEventListener("click", () => {
+  initState();
+  startTurn();
+});
+
+// ---- Start ----
+initState();
+startTurn();
+</script>
+</body>
+</html>
