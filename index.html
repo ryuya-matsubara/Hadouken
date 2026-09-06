@@ -8,6 +8,7 @@
 <!-- Start image downloads as early as possible for near-instant display -->
 <link rel="preconnect" href="https://github.com" crossorigin />
 <link rel="preconnect" href="https://objects.githubusercontent.com" crossorigin />
+<link rel="preload" as="image" href="https://github.com/user-attachments/assets/09c01193-501b-4ca5-9235-0097fd3836e2" />
 <link rel="preload" as="image" href="https://github.com/user-attachments/assets/36978bae-bd81-44cc-9487-96ad4230588d" />
 <link rel="preload" as="image" href="https://github.com/user-attachments/assets/1f96c6cb-cb0a-4d7a-80a0-7b5787a4c80b" />
 <link rel="preload" as="image" href="https://github.com/user-attachments/assets/f796cd1b-2227-47fe-9a0b-067789965a70" />
@@ -38,15 +39,17 @@
     padding: 20px;
   }
   #app { width: 100%; max-width: 560px; }
-  h1 {
-    text-align: center;
-    font-size: 1.8rem;
+  h1.title {
     margin: 0 0 12px;
-    letter-spacing: 2px;
-    background: linear-gradient(90deg, var(--p1), var(--accent), var(--p2));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    text-align: center;
+    line-height: 0;
+  }
+  .title-img {
+    display: block;
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    margin: 0 auto;
   }
   .topbar { display: flex; justify-content: flex-start; margin-bottom: 4px; min-height: 30px; }
   .home-btn {
@@ -233,9 +236,11 @@
   .pose-charge .arm.front { transform: rotate(150deg); }
   .pose-charge .arm.back  { transform: rotate(150deg); }
   .aura {
-    position:absolute; left:50%; top:64px; transform:translateX(-50%);
-    width:70px; height:70px; border-radius:50%;
-    background: radial-gradient(circle, rgba(255,170,40,0.55), rgba(255,170,40,0));
+    position:absolute; left:50%; top:40px; transform:translateX(-50%); z-index:6;
+    width:92px; height:110px; border-radius:50%;
+    background: radial-gradient(circle, rgba(255,190,70,0.15) 40%, rgba(255,170,40,0.55) 66%, rgba(255,170,40,0) 78%);
+    border:2px solid rgba(255,210,120,0.85);
+    box-shadow:0 0 22px rgba(255,180,60,0.8), inset 0 0 20px rgba(255,200,90,0.4);
     animation: auraPulse 0.5s ease-in-out infinite; display:none;
   }
   .pose-charge .aura { display:block; }
@@ -275,8 +280,8 @@
   .projectile { position:absolute; z-index:20; pointer-events:none; }
   .blast-ball {
     width:24px; height:24px; border-radius:50%;
-    background: radial-gradient(circle at 40% 40%, #fff, #ffd36b 40%, #ff7b00 80%);
-    box-shadow: 0 0 16px #ff9d3c, 0 0 30px #ff7b00;
+    background: radial-gradient(circle at 40% 40%, #fff, #d4a3ff 40%, #8a2be2 80%);
+    box-shadow: 0 0 16px #b06bff, 0 0 30px #8a2be2;
   }
   .hado-ball {
     width:46px; height:46px; border-radius:50%;
@@ -343,7 +348,11 @@
   <div class="topbar" id="topbar">
     <button class="home-btn" id="homeBtn">ホーム</button>
   </div>
-  <h1>⚡ HADOUKEN BATTLE ⚡</h1>
+  <h1 class="title">
+    <img class="title-img"
+         src="https://github.com/user-attachments/assets/09c01193-501b-4ca5-9235-0097fd3836e2"
+         alt="HADOUKEN BATTLE" fetchpriority="high" decoding="async" />
+  </h1>
 
   <div class="turn-banner" id="turnBanner"></div>
 
@@ -465,6 +474,7 @@ const MAX_ENERGY = 3;
 
 // Action button icons (images hosted on GitHub; referenced by URL because the
 // build sandbox has no outbound network to vendor the binaries locally).
+const TITLE_SRC = "https://github.com/user-attachments/assets/09c01193-501b-4ca5-9235-0097fd3836e2";
 const HERO_SRC = "https://github.com/user-attachments/assets/36978bae-bd81-44cc-9487-96ad4230588d";
 const ICON_SRC = {
   charge:   "https://github.com/user-attachments/assets/1f96c6cb-cb0a-4d7a-80a0-7b5787a4c80b",
@@ -476,7 +486,7 @@ const ICON_SRC = {
 // Preload every image up-front so they are cached before a screen needs them
 // (removes the lazy-load delay when the action buttons first appear).
 (function preloadImages() {
-  [HERO_SRC, ...Object.values(ICON_SRC)].forEach((src) => { const im = new Image(); im.src = src; });
+  [TITLE_SRC, HERO_SRC, ...Object.values(ICON_SRC)].forEach((src) => { const im = new Image(); im.src = src; });
 })();
 
 const ICONS = Object.fromEntries(
