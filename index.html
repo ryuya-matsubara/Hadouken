@@ -90,7 +90,7 @@
   .wins { font-size: 0.8rem; font-weight: bold; color: var(--accent); margin-bottom: 6px; }
   .energy { font-size: 1.3rem; letter-spacing: 2px; min-height: 1.4em; }
   .energy .empty { opacity: 0.18; }
-  .winner-sub .score { display: inline-block; margin-top: 8px; color: var(--text); font-weight: bold; }
+
 
   /* Screens */
   .screen { display: none; }
@@ -291,12 +291,12 @@
   <div class="status-row" id="statusRow">
     <div class="player-card p1" id="card1">
       <div class="player-name">プレイヤー1</div>
-      <div class="wins" id="wins1">勝利 0</div>
+      <div class="wins" id="wins1">勝利数 0</div>
       <div class="energy" id="energy1"></div>
     </div>
     <div class="player-card p2" id="card2">
       <div class="player-name">プレイヤー2</div>
-      <div class="wins" id="wins2">勝利 0</div>
+      <div class="wins" id="wins2">勝利数 0</div>
       <div class="energy" id="energy2"></div>
     </div>
   </div>
@@ -377,7 +377,7 @@
       <div class="winner-text" id="winnerText"></div>
       <div class="winner-sub" id="winnerSub"></div>
       <button class="big-btn" id="restartBtn">もう一度あそぶ</button>
-      <button class="big-btn secondary" id="resultHomeBtn">ホームに戻る（勝利数リセット）</button>
+      <button class="big-btn secondary" id="resultHomeBtn">ホームに戻る</button>
     </div>
   </div>
 </div>
@@ -465,8 +465,8 @@ function initState() {
 }
 
 function renderWins() {
-  $("wins1").textContent = `勝利 ${wins[1]}`;
-  $("wins2").textContent = `勝利 ${wins[2]}`;
+  $("wins1").textContent = `勝利数 ${wins[1]}`;
+  $("wins2").textContent = `勝利数 ${wins[2]}`;
 }
 
 // Show the home / title screen, cancelling any running battle. Resets wins.
@@ -845,8 +845,7 @@ function finishBattle(outcome) {
   $("turnBanner").textContent = "";
   $("winnerText").textContent = `🏆 プレイヤー${winner} の勝ち！`;
   $("winnerText").style.color = winner === 1 ? "var(--p1)" : "var(--p2)";
-  $("winnerSub").innerHTML =
-    `${outcome.reason}<br><span class="score">通算　プレイヤー1 ${wins[1]} - ${wins[2]} プレイヤー2</span>`;
+  $("winnerSub").textContent = outcome.reason;
 }
 
 // ---- Events ----
