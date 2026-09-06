@@ -134,15 +134,15 @@
   }
   .big-btn:hover { filter: brightness(1.08); }
   .pass-note { text-align: center; color: var(--muted); font-size: 0.95rem; margin: 8px 0 16px; }
-  .ready-icons { display: flex; justify-content: center; gap: 40px; margin: 10px 0 18px; }
-  .ready-icons .ready-fig { width: 90px; height: 120px; position: relative; }
+  .ready-icons { display: flex; justify-content: center; gap: 30px; margin: 10px 0 18px; }
+  .ready-icons .ready-fig { width: 110px; height: 150px; position: relative; }
 
   /* ============ BATTLE STAGE ============ */
   #battle .card { padding: 0; overflow: hidden; }
   .stage {
     position: relative;
     width: 100%;
-    height: 300px;
+    height: 340px;
     background:
       linear-gradient(180deg, #10233b 0%, #0b1424 55%, #060b14 100%);
     overflow: hidden;
@@ -158,11 +158,11 @@
   }
 
   .fighter-wrap {
-    position: absolute; bottom: 60px; width: 96px; height: 150px;
+    position: absolute; bottom: 48px; width: 150px; height: 210px;
     transition: transform 0.18s;
   }
-  .fighter-wrap.left { left: 46px; }
-  .fighter-wrap.right { right: 46px; transform: scaleX(-1); }
+  .fighter-wrap.left { left: 20px; }
+  .fighter-wrap.right { right: 20px; transform: scaleX(-1); }
   .fighter-wrap.right.knockback { transform: scaleX(-1) translateX(-18px); }
   .fighter-wrap.left.knockback  { transform: translateX(-18px); }
 
@@ -197,105 +197,29 @@
   @keyframes stageShake { 0%,100%{transform:translate(0,0)} 20%{transform:translate(-6px,3px)} 40%{transform:translate(6px,-3px)} 60%{transform:translate(-4px,2px)} 80%{transform:translate(4px,-2px)} }
   .stage.shake { animation: stageShake 0.45s; }
 
-  /* ---- fighter body (CSS drawn) ---- */
-  .fig { position: absolute; inset: 0; }
-  .fig .part { position: absolute; }
-  .torso {
-    width: 34px; height: 44px; left: 31px; top: 46px;
-    border-radius: 14px 14px 10px 10px;
+  /* ---- image-based fighter ---- */
+  .fighter-img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: contain; object-position: bottom center;
+    filter: drop-shadow(0 6px 8px rgba(0,0,0,0.55));
   }
-  .head {
-    width: 30px; height: 30px; left: 33px; top: 20px; border-radius: 50%;
-    border: 3px solid rgba(0,0,0,0.25);
-  }
-  .head::after {
-    content:""; position:absolute; left:6px; top:8px; width:14px; height:6px;
-    background: rgba(0,0,0,0.45); border-radius: 3px;
-  }
-  .belt { width: 34px; height: 7px; left: 31px; top: 84px; background:#1c1c22; border-radius:3px; }
-  .arm {
-    width: 12px; height: 34px; border-radius: 8px; top: 50px;
-    transform-origin: top center;
-  }
-  .arm.back { left: 24px; }
-  .arm.front { left: 60px; }
-  .leg { width: 13px; height: 40px; border-radius: 7px; top: 90px; transform-origin: top center; }
-  .leg.back { left: 30px; }
-  .leg.front { left: 46px; }
-
-  .p1c .torso, .p1c .arm, .p1c .leg { background: linear-gradient(180deg,#6fd0ff,#2e9fe0); }
-  .p1c .head { background: #ffe0bd; }
-  .p2c .torso, .p2c .arm, .p2c .leg { background: linear-gradient(180deg,#ff8f8f,#e04d4d); }
-  .p2c .head { background: #ffe0bd; }
-
   /* idle bob */
   @keyframes idleBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
-  .fighter-wrap .fig { animation: idleBob 1.6s ease-in-out infinite; }
+  .fighter-wrap .fighter-img { animation: idleBob 1.7s ease-in-out infinite; }
 
-  /* stance: charge (both fists pulled, glowing aura) */
-  .pose-charge .arm.front { transform: rotate(150deg); }
-  .pose-charge .arm.back  { transform: rotate(150deg); }
-  .aura {
-    position:absolute; left:50%; top:40px; transform:translateX(-50%); z-index:6;
-    width:92px; height:110px; border-radius:50%;
-    background: radial-gradient(circle, rgba(255,190,70,0.15) 40%, rgba(255,170,40,0.55) 66%, rgba(255,170,40,0) 78%);
-    border:2px solid rgba(255,210,120,0.85);
-    box-shadow:0 0 22px rgba(255,180,60,0.8), inset 0 0 20px rgba(255,200,90,0.4);
-    animation: auraPulse 0.5s ease-in-out infinite; display:none;
+  /* projectiles are now the provided effect images */
+  .projectile {
+    position:absolute; z-index:20; pointer-events:none;
+    object-fit: contain;
   }
-  .pose-charge .aura { display:block; }
-  @keyframes auraPulse { 0%,100%{transform:translateX(-50%) scale(0.85);opacity:0.6} 50%{transform:translateX(-50%) scale(1.15);opacity:1} }
-  .spark {
-    position:absolute; width:6px; height:6px; border-radius:50%; background:#ffd36b;
-    box-shadow:0 0 8px #ffb03a;
-  }
+  .proj-blast { width:70px; height:70px; }
+  .proj-hado  { width:110px; height:110px; }
+  /* player-2 effects face left (their images are drawn facing right) */
+  .projectile.flip { transform: scaleX(-1); }
 
-  /* stance: guard (both arms up crossed) */
-  .pose-guard .arm.front { transform: rotate(200deg) translateY(-4px); left:52px; }
-  .pose-guard .arm.back  { transform: rotate(160deg) translateY(-4px); left:30px; }
-  .shield {
-    position:absolute; left:50%; top:34px; transform:translateX(-50%); z-index:5;
-    width:80px; height:96px; border-radius:44px;
-    border:3px solid #baf0ff;
-    background: radial-gradient(circle, rgba(127,220,255,0.72), rgba(90,190,255,0.5));
-    box-shadow:0 0 22px rgba(127,220,255,0.9), inset 0 0 18px rgba(255,255,255,0.5);
-    display:none;
-  }
-  .pose-guard .shield { display:block; animation: shieldFlick 0.4s ease-in-out infinite alternate; }
-  @keyframes shieldFlick { from{opacity:0.88} to{opacity:1} }
-
-  /* stance: blast (front arm thrust) */
-  .pose-blast .arm.front { transform: rotate(95deg); left:58px; top:52px; }
-  .pose-blast .leg.front { transform: rotate(20deg); }
-  .pose-blast .leg.back  { transform: rotate(-14deg); }
-
-  /* stance: hadouken (deep stance, both palms forward) */
-  .pose-hadouken .arm.front { transform: rotate(92deg); left:60px; top:54px; }
-  .pose-hadouken .arm.back  { transform: rotate(70deg); left:40px; top:56px; }
-  .pose-hadouken .leg.front { transform: rotate(28deg); }
-  .pose-hadouken .leg.back  { transform: rotate(-24deg); }
-  .pose-hadouken .torso { transform: translateY(6px); }
-
-  /* projectiles */
-  .projectile { position:absolute; z-index:20; pointer-events:none; }
-  .blast-ball {
-    width:24px; height:24px; border-radius:50%;
-    background: radial-gradient(circle at 40% 40%, #fff, #d4a3ff 40%, #8a2be2 80%);
-    box-shadow: 0 0 16px #b06bff, 0 0 30px #8a2be2;
-  }
-  .hado-ball {
-    width:46px; height:46px; border-radius:50%;
-    background: radial-gradient(circle at 40% 40%, #ffffff, #9be7ff 35%, #2aa8ff 70%, #1567d6 100%);
-    box-shadow: 0 0 26px #46b6ff, 0 0 50px #2aa8ff;
-  }
-  .hado-ball::after {
-    content:""; position:absolute; inset:-8px; border-radius:50%;
-    border:3px solid rgba(160,225,255,0.6); animation: ring 0.5s linear infinite;
-  }
-  @keyframes ring { from{transform:rotate(0)} to{transform:rotate(360deg)} }
-
-  @keyframes travelR { from{left:96px} to{left:calc(100% - 120px)} }
-  @keyframes travelL { from{right:96px} to{right:calc(100% - 120px)} }
+  @keyframes travelR { from{left:110px} to{left:calc(100% - 150px)} }
+  @keyframes travelL { from{right:110px} to{right:calc(100% - 150px)} }
 
   .impact {
     position:absolute; z-index:22; width:80px; height:80px; border-radius:50%;
@@ -312,9 +236,8 @@
   .clash.go { animation: clashAnim 0.7s ease-out; }
   @keyframes clashAnim { 0%{opacity:0;transform:translate(-50%,-50%) scale(0.4)} 40%{opacity:1;transform:translate(-50%,-50%) scale(1.3)} 100%{opacity:0;transform:translate(-50%,-50%) scale(1)} }
 
-  @keyframes fall { 0%{transform:rotate(0)} 100%{transform:rotate(-82deg) translateY(20px)} }
-  .fighter-wrap.left.ko .fig  { animation: fall 0.7s ease-in forwards; }
-  .fighter-wrap.right.ko .fig { animation: fall 0.7s ease-in forwards; }
+  @keyframes fall { 0%{transform:rotate(0) translateY(0);opacity:1} 100%{transform:rotate(-82deg) translateY(30px);opacity:0.75} }
+  .fighter-wrap.ko .fighter-img { animation: fall 0.7s ease-in forwards; transform-origin: bottom center; }
 
   /* Result */
   #result .winner-text { text-align: center; font-size: 2rem; font-weight: bold; margin: 20px 0; }
@@ -422,32 +345,12 @@
 
         <div class="fighter-wrap left p1c" id="fw1">
           <div class="name-tag">プレイヤー1</div>
-          <div class="fig" id="fig1">
-            <div class="aura"></div>
-            <div class="shield"></div>
-            <div class="part arm back"></div>
-            <div class="part leg back"></div>
-            <div class="part leg front"></div>
-            <div class="part torso"></div>
-            <div class="part belt"></div>
-            <div class="part head"></div>
-            <div class="part arm front"></div>
-          </div>
+          <img class="fighter-img" id="fig1" alt="" decoding="async" />
         </div>
 
         <div class="fighter-wrap right p2c" id="fw2">
           <div class="name-tag">プレイヤー2</div>
-          <div class="fig" id="fig2">
-            <div class="aura"></div>
-            <div class="shield"></div>
-            <div class="part arm back"></div>
-            <div class="part leg back"></div>
-            <div class="part leg front"></div>
-            <div class="part torso"></div>
-            <div class="part belt"></div>
-            <div class="part head"></div>
-            <div class="part arm front"></div>
-          </div>
+          <img class="fighter-img" id="fig2" alt="" decoding="async" />
         </div>
 
         <div class="flash" id="flash"></div>
@@ -483,10 +386,40 @@ const ICON_SRC = {
   hadouken: "https://github.com/user-attachments/assets/0f816811-6179-4c51-b4e0-28c16a7d4a83",
 };
 
-// Preload every image up-front so they are cached before a screen needs them
-// (removes the lazy-load delay when the action buttons first appear).
+// Battle-scene fighter images. Each player has pose images (stance/charge/
+// guard/body) plus separate blast & hadouken effect images.
+const FIGHTER = {
+  1: {
+    stance:   "https://github.com/user-attachments/assets/b0de241a-e247-4316-9dda-2898c341a0d8",
+    charge:   "https://github.com/user-attachments/assets/3d7bb5dd-bf5a-404a-9a46-d7d8b56da7c4",
+    guard:    "https://github.com/user-attachments/assets/ee94e173-bba3-42e5-9f1c-eb40554118f9",
+    body:     "https://github.com/user-attachments/assets/12b1c385-262e-4dd0-8baf-69aca27bacdf",
+    blastFx:  "https://github.com/user-attachments/assets/9d8d740c-6458-4f1a-abb0-89df325ca1bc",
+    hadoFx:   "https://github.com/user-attachments/assets/ea0bc3d2-875c-4e1b-a017-13298d5e7e03",
+  },
+  2: {
+    stance:   "https://github.com/user-attachments/assets/78f92c6c-7dc7-400e-b08a-0025be5a4b5f",
+    charge:   "https://github.com/user-attachments/assets/6deb9b00-2a2c-4ff8-808f-725f549c0923",
+    guard:    "https://github.com/user-attachments/assets/1b26b257-eee8-4cf2-8289-5725fb1ef40c",
+    body:     "https://github.com/user-attachments/assets/064b9b06-ba73-483e-92f2-89827aacde14",
+    blastFx:  "https://github.com/user-attachments/assets/5ec8d95c-eb37-4974-9c63-96f975bcf817",
+    hadoFx:   "https://github.com/user-attachments/assets/f11cb92c-f0cc-434b-b34f-9a4eab1d2a20",
+  },
+};
+// pose image shown for each action (idle/countdown uses "stance")
+function poseSrc(player, key) {
+  const f = FIGHTER[player];
+  if (key === "charge") return f.charge;
+  if (key === "guard")  return f.guard;
+  if (key === "blast" || key === "hadouken") return f.body;
+  return f.stance;
+}
+
+// Preload every image up-front so they are cached before a screen needs them.
 (function preloadImages() {
-  [TITLE_SRC, HERO_SRC, ...Object.values(ICON_SRC)].forEach((src) => { const im = new Image(); im.src = src; });
+  const fighterImgs = [1, 2].flatMap((p) => Object.values(FIGHTER[p]));
+  [TITLE_SRC, HERO_SRC, ...Object.values(ICON_SRC), ...fighterImgs]
+    .forEach((src) => { const im = new Image(); im.src = src; });
 })();
 
 const ICONS = Object.fromEntries(
@@ -595,18 +528,16 @@ function chooseAction(player, key) {
 
 // NEW: an execute/ready screen between P2's choice and the battle scene
 function goToReady() {
-  // show hidden silhouettes only (actions stay secret until the battle)
-  $("readyFig1").innerHTML = readySilhouette("p1c");
-  $("readyFig2").innerHTML = readySilhouette("p2c", true);
+  // show neutral stance silhouettes only (actions stay secret until the battle)
+  $("readyFig1").innerHTML = readySilhouette(1);
+  $("readyFig2").innerHTML = readySilhouette(2, true);
   showScreen("readyScreen");
 }
 
-function readySilhouette(cls, flip) {
-  return `<div class="fig ${cls}" style="${flip ? "transform:scaleX(-1)" : ""}">
-    <div class="part arm back"></div><div class="part leg back"></div>
-    <div class="part leg front"></div><div class="part torso"></div>
-    <div class="part belt"></div><div class="part head"></div>
-    <div class="part arm front"></div></div>`;
+function readySilhouette(player, flip) {
+  const t = flip ? "transform:scaleX(-1);" : "";
+  return `<img src="${poseSrc(player, "stance")}" alt=""
+    style="width:100%;height:100%;object-fit:contain;object-position:bottom center;filter:brightness(0.15) drop-shadow(0 0 6px rgba(0,0,0,0.6));${t}" />`;
 }
 
 // ---- Battle resolution ----
@@ -636,8 +567,6 @@ function applyCosts() {
 }
 
 // ---- Battle scene (rich choreography) ----
-function poseClass(key) { return "pose-" + key; }
-
 function delay(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
 function shakeStage() {
@@ -651,9 +580,12 @@ function flashStage() {
 
 function spawnProjectile(fromPlayer, kind) {
   const stage = $("stage");
-  const el = document.createElement("div");
-  el.className = "projectile " + (kind === "hadouken" ? "hado-ball" : "blast-ball");
+  const el = document.createElement("img");
+  const isHado = kind === "hadouken";
+  el.className = "projectile " + (isHado ? "proj-hado" : "proj-blast");
+  el.src = isHado ? FIGHTER[fromPlayer].hadoFx : FIGHTER[fromPlayer].blastFx;
   const goRight = fromPlayer === 1;
+  if (!goRight) el.classList.add("flip"); // player 2 effects face left
   el.style.bottom = "150px";
   el.style.animation = `${goRight ? "travelR" : "travelL"} 0.6s linear forwards`;
   stage.appendChild(el);
@@ -687,10 +619,11 @@ function resetStage() {
   // clear lingering animation classes
   stage.classList.remove("shake");
   $("flash").classList.remove("go");
-  const fw1 = $("fw1"), fw2 = $("fw2"), fig1 = $("fig1"), fig2 = $("fig2");
-  fw1.className = "fighter-wrap left p1c";
-  fw2.className = "fighter-wrap right p2c";
-  fig1.className = "fig"; fig2.className = "fig";
+  $("fw1").className = "fighter-wrap left p1c";
+  $("fw2").className = "fighter-wrap right p2c";
+  // reset both fighters to their neutral stance pose
+  $("fig1").src = poseSrc(1, "stance");
+  $("fig2").src = poseSrc(2, "stance");
   $("battleLog").textContent = "";
   $("countdown").textContent = "";
   // force reflow so removed animation classes fully reset before replay
@@ -717,9 +650,9 @@ async function runBattle() {
   }
   cd.textContent = "";
 
-  // Reveal stances
-  fig1.classList.add(poseClass(a1));
-  fig2.classList.add(poseClass(a2));
+  // Reveal stances (swap to each action's pose image)
+  fig1.src = poseSrc(1, a1);
+  fig2.src = poseSrc(2, a2);
   $("battleLog").textContent = `${ACTIONS[a1].label}　VS　${ACTIONS[a2].label}`;
   await delay(700);
   if (cancelled()) return;
