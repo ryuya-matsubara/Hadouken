@@ -21,8 +21,8 @@
     --panel: #1a1f2b;
     --panel2: #232a38;
     --accent: #ff8a00;
-    --p1: #4fc3f7;
-    --p2: #ff6b6b;
+    --p1: #ff6b6b;
+    --p2: #4fc3f7;
     --text: #e8edf4;
     --muted: #8a94a6;
     --win: #7CFC00;
@@ -81,8 +81,8 @@
     border: 2px solid transparent;
     text-align: center;
   }
-  .player-card.p1 { border-color: rgba(79,195,247,0.4); }
-  .player-card.p2 { border-color: rgba(255,107,107,0.4); }
+  .player-card.p1 { border-color: rgba(255,107,107,0.4); }
+  .player-card.p2 { border-color: rgba(79,195,247,0.4); }
   .player-card.active { box-shadow: 0 0 0 2px var(--accent), 0 0 18px rgba(255,138,0,0.4); }
   .player-name { font-weight: bold; font-size: 1rem; margin-bottom: 6px; }
   .p1 .player-name { color: var(--p1); }
@@ -158,16 +158,16 @@
   }
 
   .fighter-wrap {
-    position: absolute; bottom: 82px; width: 132px; height: 178px;
+    position: absolute; bottom: 70px; width: 150px; height: auto;
     transition: transform 0.18s;
   }
-  .fighter-wrap.left { left: 6px; }
-  .fighter-wrap.right { right: 6px; }
+  .fighter-wrap.left { left: 0; }
+  .fighter-wrap.right { right: 0; }
   .fighter-wrap.right.knockback { transform: translateX(18px); }
   .fighter-wrap.left.knockback  { transform: translateX(-18px); }
 
   .name-tag {
-    position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
+    position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
     font-size: 0.72rem; font-weight: bold; white-space: nowrap;
     text-shadow: 0 1px 3px rgba(0,0,0,0.8);
   }
@@ -199,9 +199,8 @@
 
   /* ---- image-based fighter ---- */
   .fighter-img {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-    object-fit: contain; object-position: bottom center;
+    display: block;
+    width: 100%; height: auto;   /* box hugs the image; no empty space above */
     filter: drop-shadow(0 6px 8px rgba(0,0,0,0.55));
   }
   /* idle bob */
@@ -616,7 +615,7 @@ function flashStage() {
 
 // Vertical center where projectiles should travel (roughly the fighters'
 // hand height, measured from the stage floor).
-const PROJECTILE_CENTER = 158;
+const PROJECTILE_CENTER = 150;
 
 function spawnProjectile(fromPlayer, kind) {
   const stage = $("stage");
