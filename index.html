@@ -162,15 +162,14 @@
     transition: transform 0.18s;
   }
   .fighter-wrap.left { left: 20px; }
-  .fighter-wrap.right { right: 20px; transform: scaleX(-1); }
-  .fighter-wrap.right.knockback { transform: scaleX(-1) translateX(-18px); }
+  .fighter-wrap.right { right: 20px; }
+  .fighter-wrap.right.knockback { transform: translateX(18px); }
   .fighter-wrap.left.knockback  { transform: translateX(-18px); }
 
   .name-tag {
     position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
     font-size: 0.72rem; font-weight: bold; white-space: nowrap;
   }
-  .fighter-wrap.right .name-tag { transform: translateX(-50%) scaleX(-1); }
   .p1c .name-tag { color: var(--p1); }
   .p2c .name-tag { color: var(--p2); }
 
@@ -215,8 +214,6 @@
   }
   .proj-blast { width:70px; height:70px; }
   .proj-hado  { width:110px; height:110px; }
-  /* player-2 effects face left (their images are drawn facing right) */
-  .projectile.flip { transform: scaleX(-1); }
 
   @keyframes travelR { from{left:110px} to{left:calc(100% - 150px)} }
   @keyframes travelL { from{right:110px} to{right:calc(100% - 150px)} }
@@ -415,11 +412,19 @@ function poseSrc(player, key) {
   return f.stance;
 }
 
-// Preload every image up-front so they are cached before a screen needs them.
+// Preload every image up-front and KEEP the Image objects alive in a cache so
+// the browser holds the decoded bitmaps in memory. This removes the lag when a
+// pose is swapped and ensures short-lived projectile effects render instantly.
+const IMG_CACHE = {};
 (function preloadImages() {
   const fighterImgs = [1, 2].flatMap((p) => Object.values(FIGHTER[p]));
   [TITLE_SRC, HERO_SRC, ...Object.values(ICON_SRC), ...fighterImgs]
-    .forEach((src) => { const im = new Image(); im.src = src; });
+    .forEach((src) => {
+      const im = new Image();
+      im.decoding = "async";
+      im.src = src;
+      IMG_CACHE[src] = im;
+    });
 })();
 
 const ICONS = Object.fromEntries(
@@ -530,14 +535,14 @@ function chooseAction(player, key) {
 function goToReady() {
   // show neutral stance silhouettes only (actions stay secret until the battle)
   $("readyFig1").innerHTML = readySilhouette(1);
-  $("readyFig2").innerHTML = readySilhouette(2, true);
+  $("readyFig2").innerHTML = readySilhouette(2);
   showScreen("readyScreen");
 }
 
-function readySilhouette(player, flip) {
-  const t = flip ? "transform:scaleX(-1);" : "";
+function readySilhouette(player) {
+  // P2 images are already drawn facing left, so no flip needed
   return `<img src="${poseSrc(player, "stance")}" alt=""
-    style="width:100%;height:100%;object-fit:contain;object-position:bottom center;filter:brightness(0.15) drop-shadow(0 0 6px rgba(0,0,0,0.6));${t}" />`;
+    style="width:100%;height:100%;object-fit:contain;object-position:bottom center;filter:brightness(0.15) drop-shadow(0 0 6px rgba(0,0,0,0.6));" />`;
 }
 
 // ---- Battle resolution ----
@@ -569,6 +574,30 @@ function applyCosts() {
 // ---- Battle scene (rich choreography) ----
 function delay(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
+// Resolve once the given image URL is fully loaded (uses the preload cache).
+// Guarantees pose swaps and short-lived effect images are painted immediately.
+function ensureLoaded(src, timeoutMs = 2000) {
+  const im = IMG_CACHE[src] || (IMG_CACHE[src] = Object.assign(new Image(), { src }));
+  if (im.complete && im.naturalWidth > 0) return Promise.resolve();
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = () => { if (!done) { done = true; resolve(); } };
+    im.addEventListener("load", finish, { once: true });
+    im.addEventListener("error", finish, { once: true });
+    setTimeout(finish, timeoutMs); // never block the battle if the network is slow
+  });
+}
+
+// Preload every image the upcoming battle will use, before it starts.
+function preloadForBattle(a1, a2) {
+  const urls = new Set([poseSrc(1, a1), poseSrc(2, a2)]);
+  if (a1 === "blast") urls.add(FIGHTER[1].blastFx);
+  if (a1 === "hadouken") urls.add(FIGHTER[1].hadoFx);
+  if (a2 === "blast") urls.add(FIGHTER[2].blastFx);
+  if (a2 === "hadouken") urls.add(FIGHTER[2].hadoFx);
+  return Promise.all([...urls].map(ensureLoaded));
+}
+
 function shakeStage() {
   const s = $("stage");
   s.classList.remove("shake"); void s.offsetWidth; s.classList.add("shake");
@@ -585,7 +614,6 @@ function spawnProjectile(fromPlayer, kind) {
   el.className = "projectile " + (isHado ? "proj-hado" : "proj-blast");
   el.src = isHado ? FIGHTER[fromPlayer].hadoFx : FIGHTER[fromPlayer].blastFx;
   const goRight = fromPlayer === 1;
-  if (!goRight) el.classList.add("flip"); // player 2 effects face left
   el.style.bottom = "150px";
   el.style.animation = `${goRight ? "travelR" : "travelL"} 0.6s linear forwards`;
   stage.appendChild(el);
@@ -640,6 +668,11 @@ async function runBattle() {
 
   const fig1 = $("fig1"), fig2 = $("fig2");
   const cd = $("countdown");
+
+  // Make sure every image this battle needs is decoded before we start,
+  // so pose swaps have no lag and effect images always render.
+  await preloadForBattle(a1, a2);
+  if (cancelled()) return;
 
   // Countdown 3-2-1-FIGHT
   for (const t of ["3", "2", "1", "FIGHT!"]) {
