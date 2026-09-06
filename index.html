@@ -302,18 +302,36 @@
   /* Result */
   #result .winner-text { text-align: center; font-size: 2rem; font-weight: bold; margin: 20px 0; }
   #result .winner-sub { text-align: center; color: var(--muted); margin-bottom: 20px; }
+
+  /* Home / title screen */
+  .home-card { text-align: center; }
+  .home-lead { font-size: 1.05rem; line-height: 1.7; margin: 4px 0 18px; }
+  .home-rules {
+    text-align: left; margin: 20px auto 0; max-width: 440px;
+    font-size: 0.82rem; color: var(--muted); line-height: 1.9;
+    border-top: 1px solid #2a3140; padding-top: 14px;
+  }
+  .home-rules .hr-item b { color: var(--text); }
+  .home-hero {
+    display: block; width: 100%; height: auto; margin: 20px auto 0;
+    border-radius: 12px; border: 1px solid #2a3140;
+  }
+  /* On the home screen, hide the in-game topbar and status row */
+  #app.home-active #topbar,
+  #app.home-active #statusRow,
+  #app.home-active #turnBanner { display: none; }
 </style>
 </head>
 <body>
 <div id="app">
-  <div class="topbar">
-    <button class="home-btn" id="homeBtn">🏠 ホームに戻る</button>
+  <div class="topbar" id="topbar">
+    <button class="home-btn" id="homeBtn">ホーム</button>
   </div>
   <h1>⚡ HADOUKEN BATTLE ⚡</h1>
 
   <div class="turn-banner" id="turnBanner"></div>
 
-  <div class="status-row">
+  <div class="status-row" id="statusRow">
     <div class="player-card p1" id="card1">
       <div class="player-name">プレイヤー1</div>
       <div class="energy" id="energy1"></div>
@@ -321,6 +339,25 @@
     <div class="player-card p2" id="card2">
       <div class="player-name">プレイヤー2</div>
       <div class="energy" id="energy2"></div>
+    </div>
+  </div>
+
+  <!-- Home / title screen -->
+  <div class="screen" id="home">
+    <div class="card home-card">
+      <p class="home-lead">プレイヤー1 と プレイヤー2 の読み合い対戦。<br>攻撃を当てた方が勝ち！</p>
+      <button class="big-btn" id="startBtn">ゲームスタート</button>
+
+      <div class="home-rules">
+        <div class="hr-item"><b>チャージ</b>／エネルギーを1溜める（MAX3）</div>
+        <div class="hr-item"><b>ブラスト</b>／エネルギー1消費。相手がチャージ中なら命中・ガードで防がれる</div>
+        <div class="hr-item"><b>ガード</b>／ブラストを防ぐ（波動拳は防げない）</div>
+        <div class="hr-item"><b>波動拳</b>／エネルギー3消費。波動拳同士は相殺、それ以外は必ず命中</div>
+      </div>
+
+      <img class="home-hero" id="homeHero"
+           src="https://github.com/user-attachments/assets/36978bae-bd81-44cc-9487-96ad4230588d"
+           alt="CHARGE / GUARD / BLAST / HADOUKEN" loading="lazy" />
     </div>
   </div>
 
@@ -455,16 +492,29 @@ function initState() {
   state = { energy: { 1: 0, 2: 0 }, turn: 1, currentPlayer: 1, choice: { 1: null, 2: null } };
 }
 
-// Return to the home / first screen from anywhere, cancelling any running battle.
+// Show the home / title screen, cancelling any running battle.
 function goHome() {
   battleToken++;          // invalidates any in-flight runBattle()
+  initState();
+  setActiveCard(0);
+  $("turnBanner").textContent = "";
+  showScreen("home");
+}
+
+// Begin a fresh game from the home screen.
+function startGame() {
+  battleToken++;
   initState();
   startTurn();
 }
 
 const $ = (id) => document.getElementById(id);
-const screens = ["passScreen", "selectScreen", "readyScreen", "battle", "result"];
-function showScreen(id) { screens.forEach((s) => $(s).classList.toggle("show", s === id)); }
+const screens = ["home", "passScreen", "selectScreen", "readyScreen", "battle", "result"];
+function showScreen(id) {
+  screens.forEach((s) => $(s).classList.toggle("show", s === id));
+  // toggle home layout (hide in-game chrome on the title screen)
+  $("app").classList.toggle("home-active", id === "home");
+}
 
 function renderEnergy() {
   for (const p of [1, 2]) {
@@ -759,12 +809,13 @@ function finishBattle(outcome) {
 // ---- Events ----
 $("passBtn").addEventListener("click", () => goToSelect(state.currentPlayer));
 $("fightBtn").addEventListener("click", () => runBattle());
+$("startBtn").addEventListener("click", () => startGame());
 $("restartBtn").addEventListener("click", () => goHome());
 $("homeBtn").addEventListener("click", () => goHome());
 
 // ---- Start ----
 initState();
-startTurn();
+goHome();
 </script>
 </body>
 </html>
