@@ -98,7 +98,7 @@
     align-items: center;
     gap: 6px;
   }
-  button.action .icon { width: 46px; height: 46px; }
+  button.action .icon { width: 46px; height: 46px; object-fit: contain; border-radius: 6px; }
   button.action .cost { font-size: 0.72rem; color: var(--muted); }
   button.action:hover:not(:disabled) { background: #303a4d; transform: translateY(-2px); }
   button.action:active:not(:disabled) { transform: translateY(0); }
@@ -313,8 +313,13 @@
   }
   .home-rules .hr-item b { color: var(--text); }
   .home-hero {
-    display: block; width: 100%; height: auto; margin: 20px auto 0;
-    border-radius: 12px; border: 1px solid #2a3140;
+    display: block; height: auto;
+    /* break out of the card's 20px padding so the image spans full width */
+    width: calc(100% + 40px);
+    margin: 22px -20px -20px;         /* cancel side + bottom padding */
+    border-bottom-left-radius: 14px;  /* match the card corners */
+    border-bottom-right-radius: 14px;
+    border-top: 1px solid #2a3140;
   }
   /* On the home screen, hide the in-game topbar and status row */
   #app.home-active #topbar,
@@ -448,35 +453,18 @@
 const MAX_ENERGY = 3;
 
 // SVG icons for the 4 actions (drawn, not emoji)
-const ICONS = {
-  charge: `<svg class="icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="24" cy="24" r="16" fill="url(#cg)"/>
-    <path d="M25 12 L17 26 h6 l-2 10 10-14 h-6 z" fill="#fff8e0"/>
-    <defs><radialGradient id="cg" cx="40%" cy="35%" r="70%">
-      <stop offset="0%" stop-color="#ffe6a8"/><stop offset="60%" stop-color="#ff9d3c"/><stop offset="100%" stop-color="#e06a00"/>
-    </radialGradient></defs></svg>`,
-  blast: `<svg class="icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="22" cy="24" r="10" fill="url(#bg)"/>
-    <path d="M32 24 h12 M31 18 l10 -5 M31 30 l10 5" stroke="#ffb14a" stroke-width="3" stroke-linecap="round"/>
-    <defs><radialGradient id="bg" cx="40%" cy="40%" r="70%">
-      <stop offset="0%" stop-color="#fff"/><stop offset="45%" stop-color="#ffd36b"/><stop offset="100%" stop-color="#ff7b00"/>
-    </radialGradient></defs></svg>`,
-  guard: `<svg class="icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-    <path d="M24 5 L40 11 V24 C40 34 33 40 24 44 C15 40 8 34 8 24 V11 Z" fill="url(#gg)" stroke="#bfefff" stroke-width="2"/>
-    <path d="M24 5 L40 11 V24 C40 34 33 40 24 44 Z" fill="rgba(255,255,255,0.12)"/>
-    <path d="M17 24 l5 5 l9 -11" stroke="#eaffff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <defs><linearGradient id="gg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#6fd0ff"/><stop offset="100%" stop-color="#2e7fd0"/>
-    </linearGradient></defs></svg>`,
-  hadouken: `<svg class="icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="24" cy="24" r="13" fill="url(#hg)"/>
-    <circle cx="24" cy="24" r="17" fill="none" stroke="#a0e1ff" stroke-width="2" opacity="0.7"/>
-    <path d="M24 9 a15 15 0 0 1 13 8" stroke="#dff4ff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <path d="M24 39 a15 15 0 0 1 -13 -8" stroke="#dff4ff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <defs><radialGradient id="hg" cx="40%" cy="38%" r="70%">
-      <stop offset="0%" stop-color="#fff"/><stop offset="40%" stop-color="#9be7ff"/><stop offset="100%" stop-color="#1567d6"/>
-    </radialGradient></defs></svg>`,
+// Action button icons (images hosted on GitHub; referenced by URL because the
+// build sandbox has no outbound network to vendor the binaries locally).
+const ICON_SRC = {
+  charge:   "https://github.com/user-attachments/assets/1f96c6cb-cb0a-4d7a-80a0-7b5787a4c80b",
+  guard:    "https://github.com/user-attachments/assets/f796cd1b-2227-47fe-9a0b-067789965a70",
+  blast:    "https://github.com/user-attachments/assets/608b5c31-8e8c-46a1-9acb-ba4326a13377",
+  hadouken: "https://github.com/user-attachments/assets/0f816811-6179-4c51-b4e0-28c16a7d4a83",
 };
+const ICONS = Object.fromEntries(
+  Object.entries(ICON_SRC).map(([key, src]) =>
+    [key, `<img class="icon" src="${src}" alt="" loading="lazy" />`])
+);
 
 const ACTIONS = {
   charge:   { key: "charge",   label: "チャージ", cost: 0, costLabel: "エネルギー +1" },
