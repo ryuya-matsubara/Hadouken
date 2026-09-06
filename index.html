@@ -607,6 +607,10 @@ function flashStage() {
   f.classList.remove("go"); void f.offsetWidth; f.classList.add("go");
 }
 
+// Vertical center where projectiles should travel (roughly the fighters'
+// hand height, measured from the stage floor).
+const PROJECTILE_CENTER = 118;
+
 function spawnProjectile(fromPlayer, kind) {
   const stage = $("stage");
   const el = document.createElement("img");
@@ -614,7 +618,9 @@ function spawnProjectile(fromPlayer, kind) {
   el.className = "projectile " + (isHado ? "proj-hado" : "proj-blast");
   el.src = isHado ? FIGHTER[fromPlayer].hadoFx : FIGHTER[fromPlayer].blastFx;
   const goRight = fromPlayer === 1;
-  el.style.bottom = "150px";
+  const size = isHado ? 110 : 70;
+  // align the projectile's CENTER with the fighters' hands
+  el.style.bottom = (PROJECTILE_CENTER - size / 2) + "px";
   el.style.animation = `${goRight ? "travelR" : "travelL"} 0.6s linear forwards`;
   stage.appendChild(el);
   return el;
@@ -624,7 +630,7 @@ function impactAt(rightSide) {
   const stage = $("stage");
   const el = document.createElement("div");
   el.className = "impact go";
-  el.style.bottom = "130px";
+  el.style.bottom = (PROJECTILE_CENTER - 40) + "px"; // impact is 80px tall
   if (rightSide) el.style.right = "70px"; else el.style.left = "70px";
   stage.appendChild(el);
   setTimeout(() => el.remove(), 600);
@@ -761,7 +767,7 @@ function impactMid() {
   const stage = $("stage");
   const el = document.createElement("div");
   el.className = "impact go";
-  el.style.bottom = "130px";
+  el.style.bottom = (PROJECTILE_CENTER - 60) + "px"; // mid impact is 120px tall
   el.style.left = "50%"; el.style.transform = "translateX(-50%)";
   el.style.width = "120px"; el.style.height = "120px";
   stage.appendChild(el);
