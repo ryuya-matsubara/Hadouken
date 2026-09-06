@@ -158,17 +158,18 @@
   }
 
   .fighter-wrap {
-    position: absolute; bottom: 48px; width: 168px; height: 258px;
+    position: absolute; bottom: 82px; width: 132px; height: 178px;
     transition: transform 0.18s;
   }
-  .fighter-wrap.left { left: 20px; }
-  .fighter-wrap.right { right: 20px; }
+  .fighter-wrap.left { left: 6px; }
+  .fighter-wrap.right { right: 6px; }
   .fighter-wrap.right.knockback { transform: translateX(18px); }
   .fighter-wrap.left.knockback  { transform: translateX(-18px); }
 
   .name-tag {
-    position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
+    position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
     font-size: 0.72rem; font-weight: bold; white-space: nowrap;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
   }
   .p1c .name-tag { color: var(--p1); }
   .p2c .name-tag { color: var(--p2); }
@@ -615,7 +616,7 @@ function flashStage() {
 
 // Vertical center where projectiles should travel (roughly the fighters'
 // hand height, measured from the stage floor).
-const PROJECTILE_CENTER = 145;
+const PROJECTILE_CENTER = 158;
 
 function spawnProjectile(fromPlayer, kind) {
   const stage = $("stage");
