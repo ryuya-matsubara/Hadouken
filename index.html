@@ -64,7 +64,6 @@
   .p2 .player-name { color: var(--p2); }
   .energy { font-size: 1.3rem; letter-spacing: 2px; min-height: 1.4em; }
   .energy .empty { opacity: 0.18; }
-  .energy-label { font-size: 0.75rem; color: var(--muted); }
 
   /* Screens */
   .screen { display: none; }
@@ -120,13 +119,6 @@
     background:
       linear-gradient(180deg, #10233b 0%, #0b1424 55%, #060b14 100%);
     overflow: hidden;
-  }
-  /* distant sun / moon */
-  .stage-sun {
-    position: absolute; top: 24px; left: 50%; transform: translateX(-50%);
-    width: 90px; height: 90px; border-radius: 50%;
-    background: radial-gradient(circle at 40% 40%, #ffdca0, #ff9d3c 60%, rgba(255,120,0,0));
-    filter: blur(1px); opacity: 0.85;
   }
   .stage-ground {
     position: absolute; left: 0; right: 0; bottom: 0; height: 74px;
@@ -309,12 +301,10 @@
     <div class="player-card p1" id="card1">
       <div class="player-name">プレイヤー1</div>
       <div class="energy" id="energy1"></div>
-      <div class="energy-label">エネルギー</div>
     </div>
     <div class="player-card p2" id="card2">
       <div class="player-name">プレイヤー2</div>
       <div class="energy" id="energy2"></div>
-      <div class="energy-label">エネルギー</div>
     </div>
   </div>
 
@@ -338,12 +328,11 @@
   <div class="screen" id="readyScreen">
     <div class="card">
       <div class="prompt">両者のアクションが決定！</div>
-      <div class="pass-note">準備ができたらバトル開始！</div>
       <div class="ready-icons">
         <div class="ready-fig" id="readyFig1"></div>
         <div class="ready-fig" id="readyFig2"></div>
       </div>
-      <button class="big-btn" id="fightBtn">⚔️ バトル開始！</button>
+      <button class="big-btn" id="fightBtn">Battle❗️</button>
     </div>
   </div>
 
@@ -351,7 +340,6 @@
   <div class="screen" id="battle">
     <div class="card">
       <div class="stage" id="stage">
-        <div class="stage-sun"></div>
         <div class="stage-ground"></div>
 
         <div class="fighter-wrap left p1c" id="fw1">
@@ -598,16 +586,31 @@ function clashText(txt) {
   c.classList.remove("go"); void c.offsetWidth; c.classList.add("go");
 }
 
-async function runBattle() {
-  const a1 = state.choice[1], a2 = state.choice[2];
-  showScreen("battle");
-
+function resetStage() {
+  const stage = $("stage");
+  // remove any leftover dynamic elements from a previous turn
+  stage.querySelectorAll(".projectile, .impact").forEach((el) => el.remove());
+  const clash = $("clash");
+  if (clash) clash.remove();
+  // clear lingering animation classes
+  stage.classList.remove("shake");
+  $("flash").classList.remove("go");
   const fw1 = $("fw1"), fw2 = $("fw2"), fig1 = $("fig1"), fig2 = $("fig2");
-  // reset
   fw1.className = "fighter-wrap left p1c";
   fw2.className = "fighter-wrap right p2c";
   fig1.className = "fig"; fig2.className = "fig";
   $("battleLog").textContent = "";
+  $("countdown").textContent = "";
+  // force reflow so removed animation classes fully reset before replay
+  void stage.offsetWidth;
+}
+
+async function runBattle() {
+  const a1 = state.choice[1], a2 = state.choice[2];
+  showScreen("battle");
+  resetStage();
+
+  const fig1 = $("fig1"), fig2 = $("fig2");
   const cd = $("countdown");
 
   // Countdown 3-2-1-FIGHT
