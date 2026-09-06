@@ -158,7 +158,7 @@
   }
 
   .fighter-wrap {
-    position: absolute; bottom: 48px; width: 150px; height: 210px;
+    position: absolute; bottom: 48px; width: 168px; height: 258px;
     transition: transform 0.18s;
   }
   .fighter-wrap.left { left: 20px; }
@@ -214,6 +214,8 @@
   }
   .proj-blast { width:70px; height:70px; }
   .proj-hado  { width:110px; height:110px; }
+  /* player 2's blast effect image reads a bit larger, so shrink it slightly */
+  .proj-blast.from-p2 { width:56px; height:56px; }
 
   @keyframes travelR { from{left:110px} to{left:calc(100% - 150px)} }
   @keyframes travelL { from{right:110px} to{right:calc(100% - 150px)} }
@@ -233,8 +235,12 @@
   .clash.go { animation: clashAnim 0.7s ease-out; }
   @keyframes clashAnim { 0%{opacity:0;transform:translate(-50%,-50%) scale(0.4)} 40%{opacity:1;transform:translate(-50%,-50%) scale(1.3)} 100%{opacity:0;transform:translate(-50%,-50%) scale(1)} }
 
-  @keyframes fall { 0%{transform:rotate(0) translateY(0);opacity:1} 100%{transform:rotate(-82deg) translateY(30px);opacity:0.75} }
-  .fighter-wrap.ko .fighter-img { animation: fall 0.7s ease-in forwards; transform-origin: bottom center; }
+  @keyframes fallLeft  { 0%{transform:rotate(0) translateY(0);opacity:1} 100%{transform:rotate(-82deg) translateY(30px);opacity:0.75} }
+  @keyframes fallRight { 0%{transform:rotate(0) translateY(0);opacity:1} 100%{transform:rotate(82deg) translateY(30px);opacity:0.75} }
+  .fighter-wrap.ko .fighter-img { transform-origin: bottom center; }
+  /* player 1 (left) falls backward to the left; player 2 (right) falls backward to the right */
+  .fighter-wrap.left.ko .fighter-img  { animation: fallLeft 0.7s ease-in forwards; }
+  .fighter-wrap.right.ko .fighter-img { animation: fallRight 0.7s ease-in forwards; }
 
   /* Result */
   #result .winner-text { text-align: center; font-size: 2rem; font-weight: bold; margin: 20px 0; }
@@ -609,16 +615,17 @@ function flashStage() {
 
 // Vertical center where projectiles should travel (roughly the fighters'
 // hand height, measured from the stage floor).
-const PROJECTILE_CENTER = 118;
+const PROJECTILE_CENTER = 145;
 
 function spawnProjectile(fromPlayer, kind) {
   const stage = $("stage");
   const el = document.createElement("img");
   const isHado = kind === "hadouken";
   el.className = "projectile " + (isHado ? "proj-hado" : "proj-blast");
+  if (fromPlayer === 2) el.classList.add("from-p2");
   el.src = isHado ? FIGHTER[fromPlayer].hadoFx : FIGHTER[fromPlayer].blastFx;
   const goRight = fromPlayer === 1;
-  const size = isHado ? 110 : 70;
+  const size = isHado ? 110 : (fromPlayer === 2 ? 56 : 70);
   // align the projectile's CENTER with the fighters' hands
   el.style.bottom = (PROJECTILE_CENTER - size / 2) + "px";
   el.style.animation = `${goRight ? "travelR" : "travelL"} 0.6s linear forwards`;
