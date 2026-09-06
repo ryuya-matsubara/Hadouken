@@ -38,6 +38,18 @@
     background-clip: text;
     color: transparent;
   }
+  .topbar { display: flex; justify-content: flex-start; margin-bottom: 4px; min-height: 30px; }
+  .home-btn {
+    border: 1px solid #39424f;
+    background: var(--panel2);
+    color: var(--text);
+    font-size: 0.82rem;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .home-btn:hover { background: #303a4d; }
   .turn-banner {
     text-align: center;
     font-size: 1rem;
@@ -294,6 +306,9 @@
 </head>
 <body>
 <div id="app">
+  <div class="topbar">
+    <button class="home-btn" id="homeBtn">🏠 ホームに戻る</button>
+  </div>
   <h1>⚡ HADOUKEN BATTLE ⚡</h1>
 
   <div class="turn-banner" id="turnBanner"></div>
@@ -434,9 +449,17 @@ const ACTIONS = {
 };
 
 let state;
+let battleToken = 0; // incremented whenever a battle should be cancelled (e.g. Home)
 
 function initState() {
   state = { energy: { 1: 0, 2: 0 }, turn: 1, currentPlayer: 1, choice: { 1: null, 2: null } };
+}
+
+// Return to the home / first screen from anywhere, cancelling any running battle.
+function goHome() {
+  battleToken++;          // invalidates any in-flight runBattle()
+  initState();
+  startTurn();
 }
 
 const $ = (id) => document.getElementById(id);
@@ -607,6 +630,9 @@ function resetStage() {
 }
 
 async function runBattle() {
+  const myToken = battleToken;           // snapshot; if it changes, this battle was cancelled
+  const cancelled = () => myToken !== battleToken;
+
   const a1 = state.choice[1], a2 = state.choice[2];
   showScreen("battle");
   resetStage();
@@ -619,6 +645,7 @@ async function runBattle() {
     cd.textContent = t;
     cd.classList.remove("pop"); void cd.offsetWidth; cd.classList.add("pop");
     await delay(600);
+    if (cancelled()) return;
   }
   cd.textContent = "";
 
@@ -627,15 +654,18 @@ async function runBattle() {
   fig2.classList.add(poseClass(a2));
   $("battleLog").textContent = `${ACTIONS[a1].label}　VS　${ACTIONS[a2].label}`;
   await delay(700);
+  if (cancelled()) return;
 
   const outcome = resolve(a1, a2);
   applyCosts();
   renderEnergy();
 
   await playChoreography(a1, a2, outcome);
+  if (cancelled()) return;
 
   $("battleLog").textContent = outcome.reason;
   await delay(1300);
+  if (cancelled()) return;
   finishBattle(outcome);
 }
 
@@ -729,7 +759,8 @@ function finishBattle(outcome) {
 // ---- Events ----
 $("passBtn").addEventListener("click", () => goToSelect(state.currentPlayer));
 $("fightBtn").addEventListener("click", () => runBattle());
-$("restartBtn").addEventListener("click", () => { initState(); startTurn(); });
+$("restartBtn").addEventListener("click", () => goHome());
+$("homeBtn").addEventListener("click", () => goHome());
 
 // ---- Start ----
 initState();
