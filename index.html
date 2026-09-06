@@ -225,14 +225,15 @@
   .pose-guard .arm.front { transform: rotate(200deg) translateY(-4px); left:52px; }
   .pose-guard .arm.back  { transform: rotate(160deg) translateY(-4px); left:30px; }
   .shield {
-    position:absolute; left:50%; top:40px; transform:translateX(-50%);
-    width:70px; height:80px; border-radius:40px;
-    border:3px solid #7fdcff;
-    background: radial-gradient(circle, rgba(127,220,255,0.28), rgba(127,220,255,0.05));
-    box-shadow:0 0 18px rgba(127,220,255,0.7); display:none;
+    position:absolute; left:50%; top:34px; transform:translateX(-50%); z-index:5;
+    width:80px; height:96px; border-radius:44px;
+    border:3px solid #baf0ff;
+    background: radial-gradient(circle, rgba(127,220,255,0.72), rgba(90,190,255,0.5));
+    box-shadow:0 0 22px rgba(127,220,255,0.9), inset 0 0 18px rgba(255,255,255,0.5);
+    display:none;
   }
   .pose-guard .shield { display:block; animation: shieldFlick 0.4s ease-in-out infinite alternate; }
-  @keyframes shieldFlick { from{opacity:0.7} to{opacity:1} }
+  @keyframes shieldFlick { from{opacity:0.88} to{opacity:1} }
 
   /* stance: blast (front arm thrust) */
   .pose-blast .arm.front { transform: rotate(95deg); left:58px; top:52px; }
@@ -332,7 +333,7 @@
         <div class="ready-fig" id="readyFig1"></div>
         <div class="ready-fig" id="readyFig2"></div>
       </div>
-      <button class="big-btn" id="fightBtn">Battle❗️</button>
+      <button class="big-btn" id="fightBtn">⚔️Battle⚔️</button>
     </div>
   </div>
 
